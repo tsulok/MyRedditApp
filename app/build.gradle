@@ -1,0 +1,132 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'realm-android'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.tsulok.myreddit"
+        minSdkVersion 15
+        targetSdkVersion 27
+        versionCode generateVersionCode()
+        versionName generateVersionName()
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled false
+            useProguard true
+            zipAlignEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            versionNameSuffix "-dev"
+        }
+    }
+
+    flavorDimensions "tier"
+
+    productFlavors {
+        dev {
+            dimension "tier"
+            applicationIdSuffix = ".dev"
+
+            // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
+            // to pre-dex each module and produce an APK that can be tested on
+            // Android Lollipop without time consuming dex merging processes.
+            minSdkVersion 21
+
+            //only package xhdpi resources
+            resConfigs("xhdpi")
+        }
+
+        rc {
+            dimension "tier"
+
+            // The actual minSdkVersion for the application.
+            minSdkVersion 15
+        }
+    }
+
+    // Configure buildconfigfields for all type of buildconfig
+    applicationVariants.all { variant ->
+        // Load config file path
+        def configFilePath = "app/config/" + variant.productFlavors[0].name + "/buildconfig.properties"
+        // Load properties fir config
+        def properties = new Properties()
+        properties.load(new FileInputStream(configFilePath))
+
+        // Configure properties for all build types
+        buildConfigField "String", "SERVER_URL", properties.get("SERVER_URL")
+    }
+}
+
+kapt {
+    generateStubs = true
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    // Support files
+    compile "com.android.support:appcompat-v7:$appcompatVersion"
+    compile "com.android.support:design:$appcompatVersion"
+    compile "com.android.support:recyclerview-v7:$appcompatVersion"
+    compile "com.android.support:support-v13:$appcompatVersion"
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile "com.android.support:customtabs:$appcompatVersion"
+
+    // *********** UI *****************************************************************************
+    // Image
+    compile 'com.squareup.picasso:picasso:2.5.2'
+
+    // Dialogs
+    compile 'com.afollestad.material-dialogs:core:0.9.5.0'
+
+    // *********** Utility ************************************************************************
+    // RXJava
+    compile 'io.reactivex.rxjava2:rxjava:2.1.8'
+    compile "io.reactivex.rxjava2:rxandroid:2.0.1"
+    compile 'com.jakewharton.rxbinding2:rxbinding-kotlin:2.0.0'
+    compile 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
+
+    // Dagger
+    compile "com.google.dagger:dagger:$daggerVersion"
+    compile "com.google.dagger:dagger-android:$daggerVersion"
+    compile "com.google.dagger:dagger-android-support:$daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$daggerVersion"
+    kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
+    provided 'org.glassfish:javax.annotation:10.0-b28' //Required by Dagger2
+
+    // Logger framework
+    compile 'com.orhanobut:logger:2.1.1'
+
+    // *********** Networking *********************************************************************
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.retrofit2:converter-moshi:2.3.0'
+    compile 'com.squareup.moshi:moshi-kotlin:1.5.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    compile "com.squareup.okhttp3:okhttp:3.9.1"
+    compile "com.squareup.okhttp3:logging-interceptor:3.9.1"
+
+    // *********** Testing ************************************************************************
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}
+
+private Integer generateVersionCode() {
+    return ext.versionMajor * 10000 + ext.versionMinor * 100 + ext.versionPatch
+}
+
+private String generateVersionName() {
+    return "${ext.versionMajor}.${ext.versionMinor}.${ext.versionPatch}"
+}

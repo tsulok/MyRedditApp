@@ -1,0 +1,10 @@
+<resources>
+    <!--App specific strings-->
+    <string name="app_name">MyReddit</string>
+
+    <!-- Loader -->
+    <string name="loading_default">Loading</string>
+
+    <!--Posts-->
+    <string name="posts_no_cache">Failed to fetch new data and the cache is empty.</string>
+</resources>
