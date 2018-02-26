@@ -1,2 +1,2 @@
-MyReddit
-An Android application for demo purposes
+# MyReddit
+My Android application for demo purposes
